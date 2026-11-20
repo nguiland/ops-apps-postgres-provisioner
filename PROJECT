@@ -1,0 +1,9 @@
+version: "3"
+domain: nguiland.org
+repo: github.com/nguiland/ops-apps-postgres-provisioner
+resources:
+  - group: postgres-provisioner
+    version: v1alpha1
+    kind: PostgresInstance
+    path: api/v1alpha1/postgres_instance_types.go
+    controller: true

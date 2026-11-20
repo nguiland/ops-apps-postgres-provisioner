@@ -1,0 +1,18 @@
+# Build artifacts.
+bin/
+
+# Version control.
+.git/
+
+# Kubernetes deployment manifests and samples.
+config/
+
+# Helm charts.
+charts/
+
+# Project documentation and metadata.
+README.md
+PROJECT
+
+# Archives.
+*.zip
