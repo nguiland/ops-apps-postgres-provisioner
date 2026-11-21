@@ -65,8 +65,8 @@ func (r *PostgresReconciler) getAdminCredentials(
 func (r *PostgresReconciler) connect(
 	ctx context.Context,
 	instance *pgprovisioner.PostgresInstance,
-	adminUsername string,
-	adminPassword string,
+	username string,
+	password string,
 ) (*postgres.Provisioner, error) {
 	port := instance.Spec.Connection.Port
 
@@ -87,11 +87,11 @@ func (r *PostgresReconciler) connect(
 	}
 
 	provisioner, err := postgres.Connect(ctx, postgres.ConnectionConfig{
-		Host:          instance.Spec.Connection.Host,
-		Port:          port,
-		SSLMode:       sslMode,
-		AdminUsername: adminUsername,
-		AdminPassword: adminPassword,
+		Host:     instance.Spec.Connection.Host,
+		Port:     port,
+		SSLMode:  sslMode,
+		Username: username,
+		Password: password,
 	})
 	if err != nil {
 		return nil, fmt.Errorf("connect to PostgreSQL: %w", err)

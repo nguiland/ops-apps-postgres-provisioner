@@ -1,11 +1,11 @@
 package postgres
 
 type ConnectionConfig struct {
-	Host          string
-	Port          int32
-	SSLMode       string
-	AdminUsername string
-	AdminPassword string
+	Host     string
+	Port     int32
+	SSLMode  string
+	Username string
+	Password string
 }
 
 type DatabaseConfig struct {

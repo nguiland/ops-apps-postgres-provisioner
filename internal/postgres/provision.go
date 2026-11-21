@@ -18,7 +18,7 @@ type Provisioner struct {
 func Connect(ctx context.Context, config ConnectionConfig) (*Provisioner, error) {
 	u := &url.URL{
 		Scheme: "postgres",
-		User:   url.UserPassword(config.AdminUsername, config.AdminPassword),
+		User:   url.UserPassword(config.Username, config.Password),
 		Host:   net.JoinHostPort(config.Host, strconv.Itoa(int(config.Port))),
 		Path:   "postgres",
 	}
