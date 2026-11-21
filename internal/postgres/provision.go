@@ -95,7 +95,7 @@ func (p *Provisioner) ensureRole(
 
 	if err := p.db.QueryRowContext(
 		ctx,
-		"SELECT format('"+operation+"', $1, $2)",
+		"SELECT format('"+operation+"', $1::text, $2::text)",
 		config.Username,
 		config.Password,
 	).Scan(&statement); err != nil {
@@ -117,7 +117,7 @@ func (p *Provisioner) ensureDatabase(
 
 	if err := p.db.QueryRowContext(
 		ctx,
-		"SELECT EXISTS (SELECT 1 FROM pg_database WHERE datname = $1)",
+		"SELECT EXISTS (SELECT 1 FROM pg_database WHERE datname = $1::text)",
 		config.Name,
 	).Scan(&exists); err != nil {
 		return fmt.Errorf("check database %q: %w", config.Name, err)
@@ -131,7 +131,7 @@ func (p *Provisioner) ensureDatabase(
 
 	if err := p.db.QueryRowContext(
 		ctx,
-		"SELECT format('CREATE DATABASE %I OWNER %I', $1, $2)",
+		"SELECT format('CREATE DATABASE %I OWNER %I', $1::text, $2::text)",
 		config.Name,
 		config.Username,
 	).Scan(&statement); err != nil {
@@ -153,7 +153,7 @@ func (p *Provisioner) ensureDatabaseOwner(
 
 	if err := p.db.QueryRowContext(
 		ctx,
-		"SELECT format('ALTER DATABASE %I OWNER TO %I', $1, $2)",
+		"SELECT format('ALTER DATABASE %I OWNER TO %I', $1::text, $2::text)",
 		config.Name,
 		config.Username,
 	).Scan(&statement); err != nil {
