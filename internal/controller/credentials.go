@@ -15,19 +15,19 @@ func requiredCredentials(
 	password = string(secret.Data[passwordKey])
 
 	if username == "" {
-		return "", "", "", fmt.Errorf("key %q is missing or blank", usernameKey)
+		return "", "", "", fmt.Errorf("Key %q is missing or blank", usernameKey)
 	}
 
 	if len(username) > 63 || strings.ContainsRune(username, '\x00') {
 		return "", "", "", fmt.Errorf(
-			"key %q must be a valid PostgreSQL identifier of at most 63 bytes",
+			"Key %q must be a valid PostgreSQL identifier of at most 63 bytes",
 			usernameKey,
 		)
 	}
 
 	if strings.TrimSpace(password) == "" || strings.ContainsRune(password, '\x00') {
 		return "", "", "", fmt.Errorf(
-			"key %q is missing, blank, or contains a NUL byte",
+			"Key %q is missing, blank, or contains a NUL byte",
 			passwordKey,
 		)
 	}
@@ -41,7 +41,7 @@ func requiredCredentials(
 
 		if len(database) > 63 || strings.ContainsRune(database, '\x00') {
 			return "", "", "", fmt.Errorf(
-				"key %q must be a valid PostgreSQL identifier of at most 63 bytes",
+				"Key %q must be a valid PostgreSQL identifier of at most 63 bytes",
 				databaseNameKey,
 			)
 		}

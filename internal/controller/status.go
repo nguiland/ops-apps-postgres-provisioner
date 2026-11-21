@@ -23,7 +23,7 @@ func (r *PostgresReconciler) updateStatus(
 		Type:               readyCondition,
 		Status:             metav1.ConditionTrue,
 		Reason:             reconciliationSucceeded,
-		Message:            fmt.Sprintf("All %d selected database Secret(s) are reconciled", len(databases)),
+		Message:            fmt.Sprintf("All %d managed database Secrets were reconciled successfully", len(databases)),
 		ObservedGeneration: instance.Generation,
 	}
 
@@ -31,7 +31,7 @@ func (r *PostgresReconciler) updateStatus(
 		condition.Status = metav1.ConditionFalse
 		condition.Reason = databaseProvisioningFailed
 		condition.Message = fmt.Sprintf(
-			"%d of %d database Secret(s) failed; successful databases remain reconciled",
+			"Could not reconcile %d of %d managed database Secrets; the remaining databases were reconciled successfully",
 			failures,
 			len(databases),
 		)
@@ -40,7 +40,7 @@ func (r *PostgresReconciler) updateStatus(
 	meta.SetStatusCondition(&instance.Status.Conditions, condition)
 
 	if err := r.Status().Update(ctx, instance); err != nil {
-		return fmt.Errorf("update PostgresInstance status: %w", err)
+		return fmt.Errorf("Could not update status for PostgresInstance %s/%s: %w", instance.Namespace, instance.Name, err)
 	}
 
 	return nil
@@ -63,7 +63,9 @@ func (r *PostgresReconciler) setFailure(
 
 	if err := r.Status().Update(ctx, instance); err != nil {
 		return reconcile.Result{}, fmt.Errorf(
-			"update PostgresInstance status after reconciliation failure: %w",
+			"Could not update status for PostgresInstance %s/%s after reconciliation failed: %w",
+			instance.Namespace,
+			instance.Name,
 			err,
 		)
 	}

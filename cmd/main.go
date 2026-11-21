@@ -30,7 +30,7 @@ func main() {
 func run(args []string) error {
 	cfg, err := config.Parse(args)
 	if err != nil {
-		return fmt.Errorf("parse configuration: %w", err)
+		return fmt.Errorf("Could not parse configuration: %w", err)
 	}
 
 	ctrl.SetLogger(zap.New(zap.UseFlagOptions(&cfg.Zap)))
@@ -38,14 +38,14 @@ func run(args []string) error {
 
 	scheme, err := registerTypes()
 	if err != nil {
-		return fmt.Errorf("register Kubernetes API types: %w", err)
+		return fmt.Errorf("Could not register Kubernetes API types: %w", err)
 	}
 
 	cacheOptions := configureCache(cfg.Namespace)
 
 	restConfig, err := ctrl.GetConfig()
 	if err != nil {
-		return fmt.Errorf("get Kubernetes REST configuration: %w", err)
+		return fmt.Errorf("Could not get Kubernetes REST configuration: %w", err)
 	}
 
 	mgr, err := ctrl.NewManager(restConfig, ctrl.Options{
@@ -57,7 +57,7 @@ func run(args []string) error {
 		Cache:                  cacheOptions,
 	})
 	if err != nil {
-		return fmt.Errorf("create controller manager: %w", err)
+		return fmt.Errorf("Could not create controller manager: %w", err)
 	}
 
 	reconciler := &controller.PostgresReconciler{
@@ -67,19 +67,19 @@ func run(args []string) error {
 	}
 
 	if err := reconciler.SetupWithManager(mgr); err != nil {
-		return fmt.Errorf("set up Postgres reconciler: %w", err)
+		return fmt.Errorf("Could not set up Postgres reconciler: %w", err)
 	}
 
 	if err := mgr.AddHealthzCheck("healthz", healthz.Ping); err != nil {
-		return fmt.Errorf("register health check: %w", err)
+		return fmt.Errorf("Could not register health check: %w", err)
 	}
 
 	if err := mgr.AddReadyzCheck("readyz", healthz.Ping); err != nil {
-		return fmt.Errorf("register readiness check: %w", err)
+		return fmt.Errorf("Could not register readiness check: %w", err)
 	}
 
 	if err := mgr.Start(ctrl.SetupSignalHandler()); err != nil {
-		return fmt.Errorf("start controller manager: %w", err)
+		return fmt.Errorf("Could not start controller manager: %w", err)
 	}
 
 	return nil
@@ -89,11 +89,11 @@ func registerTypes() (*runtime.Scheme, error) {
 	scheme := runtime.NewScheme()
 
 	if err := corev1.AddToScheme(scheme); err != nil {
-		return nil, fmt.Errorf("register core Kubernetes API types: %w", err)
+		return nil, fmt.Errorf("Could not register core Kubernetes API types: %w", err)
 	}
 
 	if err := pgprovisioner.AddToScheme(scheme); err != nil {
-		return nil, fmt.Errorf("register Postgres API types: %w", err)
+		return nil, fmt.Errorf("Could not register Postgres API types: %w", err)
 	}
 
 	return scheme, nil

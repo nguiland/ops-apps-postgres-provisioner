@@ -2,6 +2,7 @@ package controller
 
 import (
 	"context"
+	"fmt"
 
 	pgprovisioner "github.com/nguiland/ops-apps-postgres-provisioner/api/v1alpha1"
 	"github.com/nguiland/ops-apps-postgres-provisioner/internal/postgres"
@@ -38,6 +39,9 @@ func reconcileDatabaseSecrets(
 		key := secret.Namespace + "/" + secret.Name
 
 		database, username, password, err := requiredCredentials(secret, true)
+		if err != nil {
+			err = fmt.Errorf("Database credentials in Secret %s are invalid: %w", key, err)
+		}
 
 		item := pgprovisioner.DatabaseStatus{
 			Namespace:  secret.Namespace,
@@ -60,6 +64,14 @@ func reconcileDatabaseSecrets(
 				},
 				updatePassword,
 			)
+			if err != nil {
+				err = fmt.Errorf(
+					"Could not provision database %q for Secret %s: %w",
+					database,
+					key,
+					err,
+				)
+			}
 		}
 
 		if err != nil {
@@ -68,7 +80,7 @@ func reconcileDatabaseSecrets(
 			item.Message = err.Error()
 			failures++
 
-			logger.Error(err, "failed to provision database", "secret", key)
+			logger.Error(err, "Failed to reconcile managed database Secret", "secret", key)
 		} else {
 			item.ObservedResourceVersion = secret.ResourceVersion
 			item.Ready = true

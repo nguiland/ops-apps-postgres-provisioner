@@ -57,13 +57,13 @@ func Parse(args []string) (Config, error) {
 	cfg.Zap.BindFlags(flags)
 
 	if err := flags.Parse(args); err != nil {
-		return Config{}, fmt.Errorf("parse flags: %w", err)
+		return Config{}, fmt.Errorf("Could not parse command-line flags: %w", err)
 	}
 
 	cfg.Namespace = strings.TrimSpace(cfg.Namespace)
 
 	if cfg.Namespace == "" {
-		return Config{}, errors.New("namespace must be provided")
+		return Config{}, errors.New("Namespace is required")
 	}
 
 	return cfg, nil

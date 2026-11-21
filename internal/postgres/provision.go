@@ -29,14 +29,14 @@ func Connect(ctx context.Context, config ConnectionConfig) (*Provisioner, error)
 
 	db, err := sql.Open("pgx", u.String())
 	if err != nil {
-		return nil, fmt.Errorf("create PostgreSQL connection: %w", err)
+		return nil, fmt.Errorf("Could not create PostgreSQL connection: %w", err)
 	}
 
 	db.SetMaxOpenConns(2)
 
 	if err := db.PingContext(ctx); err != nil {
 		db.Close()
-		return nil, fmt.Errorf("connect to PostgreSQL: %w", err)
+		return nil, fmt.Errorf("Could not connect to PostgreSQL: %w", err)
 	}
 
 	return &Provisioner{db: db}, nil
@@ -76,7 +76,7 @@ func (p *Provisioner) ensureRole(
 		"SELECT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = $1)",
 		config.Username,
 	).Scan(&exists); err != nil {
-		return fmt.Errorf("check role %q: %w", config.Username, err)
+		return fmt.Errorf("Could not check PostgreSQL role %q: %w", config.Username, err)
 	}
 
 	if exists && !updatePassword {
@@ -99,11 +99,11 @@ func (p *Provisioner) ensureRole(
 		config.Username,
 		config.Password,
 	).Scan(&statement); err != nil {
-		return fmt.Errorf("prepare role statement: %w", err)
+		return fmt.Errorf("Could not prepare role creation or update for %q: %w", config.Username, err)
 	}
 
 	if _, err := p.db.ExecContext(ctx, statement); err != nil {
-		return fmt.Errorf("create or update role %q: %w", config.Username, err)
+		return fmt.Errorf("Could not create or update PostgreSQL role %q: %w", config.Username, err)
 	}
 
 	return nil
@@ -120,7 +120,7 @@ func (p *Provisioner) ensureDatabase(
 		"SELECT EXISTS (SELECT 1 FROM pg_database WHERE datname = $1::text)",
 		config.Name,
 	).Scan(&exists); err != nil {
-		return fmt.Errorf("check database %q: %w", config.Name, err)
+		return fmt.Errorf("Could not check whether database %q exists: %w", config.Name, err)
 	}
 
 	if exists {
@@ -135,11 +135,11 @@ func (p *Provisioner) ensureDatabase(
 		config.Name,
 		config.Username,
 	).Scan(&statement); err != nil {
-		return fmt.Errorf("prepare database creation: %w", err)
+		return fmt.Errorf("Could not prepare database creation for %q: %w", config.Name, err)
 	}
 
 	if _, err := p.db.ExecContext(ctx, statement); err != nil {
-		return fmt.Errorf("create database %q: %w", config.Name, err)
+		return fmt.Errorf("Could not create PostgreSQL database %q: %w", config.Name, err)
 	}
 
 	return nil
@@ -157,11 +157,11 @@ func (p *Provisioner) ensureDatabaseOwner(
 		config.Name,
 		config.Username,
 	).Scan(&statement); err != nil {
-		return fmt.Errorf("prepare database ownership: %w", err)
+		return fmt.Errorf("Could not prepare ownership change for database %q and role %q: %w", config.Name, config.Username, err)
 	}
 
 	if _, err := p.db.ExecContext(ctx, statement); err != nil {
-		return fmt.Errorf("set owner of database %q: %w", config.Name, err)
+		return fmt.Errorf("Could not set role %q as owner of database %q: %w", config.Username, config.Name, err)
 	}
 
 	return nil

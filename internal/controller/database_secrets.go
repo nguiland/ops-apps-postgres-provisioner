@@ -37,7 +37,10 @@ func (s databaseSecrets) list(
 	}
 
 	if err := s.reader.List(ctx, secrets, selector); err != nil {
-		return nil, fmt.Errorf("list managed database Secrets: %w", err)
+		return nil, fmt.Errorf(
+			"Could not list managed database Secrets: %w",
+			err,
+		)
 	}
 
 	sort.Slice(secrets.Items, func(i, j int) bool {

@@ -47,7 +47,7 @@ func (r *PostgresReconciler) getAdminCredentials(
 
 	if err := r.APIReader.Get(ctx, secretKey, adminSecret); err != nil {
 		return "", "", fmt.Errorf(
-			"read administrator Secret %s/%s: %w",
+			"Administrator Secret %s/%s could not be read: %w",
 			adminNamespace,
 			instance.Spec.AdminSecretRef.Name,
 			err,
@@ -56,7 +56,12 @@ func (r *PostgresReconciler) getAdminCredentials(
 
 	_, username, password, err = requiredCredentials(adminSecret, false)
 	if err != nil {
-		return "", "", fmt.Errorf("administrator Secret: %w", err)
+		return "", "", fmt.Errorf(
+			"Administrator credentials in Secret %s/%s are invalid: %w",
+			adminNamespace,
+			instance.Spec.AdminSecretRef.Name,
+			err,
+		)
 	}
 
 	return username, password, nil
@@ -76,7 +81,7 @@ func (r *PostgresReconciler) connect(
 
 	if port < 1 || port > 65535 {
 		return nil, fmt.Errorf(
-			"invalid PostgreSQL port %d: must be between 1 and 65535",
+			"Invalid PostgreSQL port %d: must be between 1 and 65535",
 			port,
 		)
 	}
@@ -94,7 +99,12 @@ func (r *PostgresReconciler) connect(
 		Password: password,
 	})
 	if err != nil {
-		return nil, fmt.Errorf("connect to PostgreSQL: %w", err)
+		return nil, fmt.Errorf(
+			"Could not connect to PostgreSQL at %s:%d: %w",
+			instance.Spec.Connection.Host,
+			port,
+			err,
+		)
 	}
 
 	return provisioner, nil
