@@ -2,7 +2,7 @@ package v1alpha1
 
 import metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-// PostgresInstance configures one PostgreSQL server managed by this operator.
+// PostgresInstance configures one PostgreSQL server managed by this provisioner.
 // +kubebuilder:object:root=true
 // +kubebuilder:subresource:status
 // +kubebuilder:resource:scope=Namespaced,shortName=pginstance
