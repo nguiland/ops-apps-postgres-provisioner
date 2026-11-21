@@ -13,14 +13,14 @@ import (
 func databaseStatusesByKey(
 	statuses []pgprovisioner.DatabaseStatus,
 ) map[string]pgprovisioner.DatabaseStatus {
-	result := make(map[string]pgprovisioner.DatabaseStatus, len(statuses))
+	statusesByKey := make(map[string]pgprovisioner.DatabaseStatus, len(statuses))
 
-	for _, item := range statuses {
-		key := item.Namespace + "/" + item.SecretName
-		result[key] = item
+	for _, status := range statuses {
+		key := status.Namespace + "/" + status.SecretName
+		statusesByKey[key] = status
 	}
 
-	return result
+	return statusesByKey
 }
 
 func reconcileDatabaseSecrets(
@@ -43,17 +43,10 @@ func reconcileDatabaseSecrets(
 			err = fmt.Errorf("Database credentials in Secret %s are invalid: %w", key, err)
 		}
 
-		item := pgprovisioner.DatabaseStatus{
-			Namespace:  secret.Namespace,
-			SecretName: secret.Name,
-			Database:   database,
-			Username:   username,
-		}
-
-		previous := previousStatuses[key]
+		previousStatus := previousStatuses[key]
 
 		if err == nil {
-			updatePassword := previous.ObservedResourceVersion != secret.ResourceVersion
+			updatePassword := previousStatus.ObservedResourceVersion != secret.ResourceVersion
 
 			err = provisioner.Provision(
 				ctx,
@@ -74,20 +67,27 @@ func reconcileDatabaseSecrets(
 			}
 		}
 
+		status := pgprovisioner.DatabaseStatus{
+			Namespace:  secret.Namespace,
+			SecretName: secret.Name,
+			Database:   database,
+			Username:   username,
+		}
+
 		if err != nil {
-			item.ObservedResourceVersion = previous.ObservedResourceVersion
-			item.Ready = false
-			item.Message = err.Error()
+			status.ObservedResourceVersion = previousStatus.ObservedResourceVersion
+			status.Ready = false
+			status.Message = err.Error()
 			failures++
 
 			logger.Error(err, "Failed to reconcile managed database Secret", "secret", key)
 		} else {
-			item.ObservedResourceVersion = secret.ResourceVersion
-			item.Ready = true
-			item.Message = "Database and role are reconciled"
+			status.ObservedResourceVersion = secret.ResourceVersion
+			status.Ready = true
+			status.Message = "Database and role are reconciled"
 		}
 
-		nextStatuses = append(nextStatuses, item)
+		nextStatuses = append(nextStatuses, status)
 	}
 
 	return nextStatuses, failures
